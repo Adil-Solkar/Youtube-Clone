@@ -1,10 +1,25 @@
+import Head from './components/Head';
+import Body from './components/Body';
 function App() {
  
   return (
     <>
-     <h1>Youtube clone</h1>
+     <Head />
+     <Body />
     </>
   )
 }
 
 export default App
+
+/*
+*  Head 
+*  Body
+*    Sidebar
+*       MenuItems
+*  MainContainer
+*       ButtonList
+*       VideoContainer
+*         VideoCard 
+*
+*/
