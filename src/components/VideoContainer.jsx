@@ -1,32 +1,36 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import VideoCard from "./VideoCard";
 
-
 const VideoContainer = () => {
-  const videosApi = import.meta.env.VITE_YOUTUBE_VIDEOS_API
-  const apiKey = import.meta.env.VITE_GOOGLE_API_KEY
-  
-  useEffect(()=>{
-     async function fetchVideos(){
-      try{
-        const response = await fetch(videosApi+apiKey)
-        if(!response.ok){
+  const [videos, setVideos] = useState([]);
+
+  const videosApi = import.meta.env.VITE_YOUTUBE_VIDEOS_API;
+  const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+
+  useEffect(() => {
+    async function fetchVideos() {
+      try {
+        const response = await fetch(videosApi + apiKey);
+        if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const data = await response.json()
-        // console.log(data)
-      }
-      catch(err){
-        console.error('Error fetching :', err);
+        const data = await response.json();
+        setVideos(data.items);
+      } catch (err) {
+        console.error("Error fetching :", err);
       }
     }
-    fetchVideos()
-  },[apiKey, videosApi]);
+    fetchVideos();
+  }, [apiKey, videosApi]);
 
+  if (videos.length === 0) return null;
   return (
     <>
-      <div>VideoContainer</div>
-      <VideoCard />
+      <div className="flex flex-wrap justify-center gap-2">
+        {videos.map((video) => {
+          return <VideoCard key={video?.id} info={video} />;
+        })}
+      </div>
     </>
   );
 };
