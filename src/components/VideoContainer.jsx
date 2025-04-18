@@ -23,12 +23,15 @@ const VideoContainer = () => {
     fetchVideos();
   }, [apiKey, videosApi]);
 
+  //add Shimmer UI
   if (videos.length === 0) return null;
   return (
     <>
-      <div className="flex flex-wrap justify-center gap-2">
+      <div className="flex flex-wrap justify-center items-stretch gap-1">
         {videos.map((video) => {
-          return <VideoCard key={video?.id} info={video} />;
+          return (
+              <VideoCard key={video?.id} info={video}/>
+          );
         })}
       </div>
     </>
