@@ -25,7 +25,7 @@ const VideoContainer = () => {
 
   //add Shimmer UI
   if (videos.length === 0) return null;
-  return (
+    return (
     <>
       <div className="flex flex-wrap justify-center items-stretch gap-1">
         {videos.map((video) => {

@@ -13,7 +13,7 @@ const VideoCard = ({ info }) => {
           <div>
             <img
               className="block w-full rounded-xl"
-              src={thumbnails?.high?.url}
+              src={thumbnails?.medium?.url}
               alt="thumbnail"
             />
           </div>

@@ -1,15 +1,53 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { useDispatch } from "react-redux";
 import { toggleMenu } from "../utils/appSlice";
-const Head = () => {
-  const dispatch = useDispatch();
 
+const Head = () => {
+  const [searchText, setSearchText] = useState("");
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [showSuggestions,setShowSuggestions] = useState(false)
+  const searchApi = import.meta.env.VITE_YOUTUBE_SEARCH_API;
+console.log(searchSuggestions)
+
+  useEffect(() => {
+    async function fetchSearchText() {
+      try {
+        const response = await fetch(searchApi + searchText);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setSearchSuggestions(data[1]);
+      } catch (err) {
+        console.error("Error fetching :", err);
+      }
+    }
+    /* make an api call at every key press
+     * but if the diffrence between two api calls is  < 500 ms
+     * decline the api call */
+
+    const timeoutId = setTimeout(() => {
+      fetchSearchText();
+    }, 300);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [searchApi, searchText]);
+
+  const dispatch = useDispatch();
   function toggleMenuhandler() {
     dispatch(toggleMenu());
   }
+
+  function handleSearchTextChange(e) {
+    setSearchText(e.target.value);
+  }
+
   return (
     <>
-      <div className="grid grid-flow-col p-5 shadow-lg">
+      <div className="grid grid-flow-col p-5 shadow-lg fixed top-0 left-0 right-0 z-50 h-20 bg-white">
         <div className="flex col-span-1">
           <img
             onClick={toggleMenuhandler}
@@ -25,12 +63,31 @@ const Head = () => {
             />
           </Link>
         </div>
-        <div className="col-span-10 m-auto">
+        <div className="col-span-10 m-auto ">
           <input
             type="text"
-            className="border border-gray-400 p-1.5 w-90 rounded-l-2xl"
+            placeholder="Search"
+            value={searchText}
+            onChange={handleSearchTextChange}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setShowSuggestions(false)}
+            className="border border-gray-400 p-1.5 pl-6 w-90 rounded-l-2xl"
           />
           <button className=" bg-gray-200 p-2 rounded-r-2xl w-15">🔍</button>
+          {showSuggestions && <div className="m-1 w-89 border-gray-400 bg-white shadow-lg fixed rounded-lg">
+            <ul>
+              {searchSuggestions && searchSuggestions.length
+                ? searchSuggestions.map((suggestion) => {
+                    return (
+                      // use uuid for key
+                      <li key={suggestion} className="border-gray-200 px-2 py-1  hover:bg-gray-100">
+                        {suggestion}
+                      </li>
+                    );
+                  })
+                : null}
+            </ul>
+          </div>}
         </div>
         <div className="col-span-1">
           <img
