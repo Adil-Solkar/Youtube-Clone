@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toggleMenu } from "../utils/appSlice";
+import { cacheSearchResults } from "../utils/searchSlice";
 
 const Head = () => {
   const [searchText, setSearchText] = useState("");
   const [searchSuggestions, setSearchSuggestions] = useState([]);
-  const [showSuggestions,setShowSuggestions] = useState(false)
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const searchApi = import.meta.env.VITE_YOUTUBE_SEARCH_API;
-console.log(searchSuggestions)
+  const searchCache = useSelector((store) => store.search)
+  const dispatch = useDispatch();
 
   useEffect(() => {
     async function fetchSearchText() {
@@ -19,24 +21,34 @@ console.log(searchSuggestions)
         }
         const data = await response.json();
         setSearchSuggestions(data[1]);
+
+        // update cache
+        dispatch(cacheSearchResults({
+          [searchText] : data[1],
+        }))
       } catch (err) {
         console.error("Error fetching :", err);
       }
     }
+    
     /* make an api call at every key press
-     * but if the diffrence between two api calls is  < 500 ms
+     * but if the diffrence between two api calls is  < 300 ms
      * decline the api call */
 
     const timeoutId = setTimeout(() => {
-      fetchSearchText();
+      if (searchCache[searchText]) {
+        setSearchSuggestions(searchCache[searchText]);
+      } else {
+        fetchSearchText();
+      }
     }, 300);
 
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [searchApi, searchText]);
+  }, [dispatch, searchApi, searchCache, searchText]);
 
-  const dispatch = useDispatch();
+  
   function toggleMenuhandler() {
     dispatch(toggleMenu());
   }
@@ -74,20 +86,25 @@ console.log(searchSuggestions)
             className="border border-gray-400 p-1.5 pl-6 w-90 rounded-l-2xl"
           />
           <button className=" bg-gray-200 p-2 rounded-r-2xl w-15">🔍</button>
-          {showSuggestions && <div className="m-1 w-89 border-gray-400 bg-white shadow-lg fixed rounded-lg">
-            <ul>
-              {searchSuggestions && searchSuggestions.length
-                ? searchSuggestions.map((suggestion) => {
-                    return (
-                      // use uuid for key
-                      <li key={suggestion} className="border-gray-200 px-2 py-1  hover:bg-gray-100">
-                        {suggestion}
-                      </li>
-                    );
-                  })
-                : null}
-            </ul>
-          </div>}
+          {showSuggestions && (
+            <div className="m-1 w-89 border-gray-400 bg-white shadow-lg fixed rounded-lg">
+              <ul>
+                {searchSuggestions && searchSuggestions.length
+                  ? searchSuggestions.map((suggestion) => {
+                      return (
+                        // use uuid for key
+                        <li
+                          key={suggestion}
+                          className="border-gray-200 px-2 py-1  hover:bg-gray-100"
+                        >
+                          {suggestion}
+                        </li>
+                      );
+                    })
+                  : null}
+              </ul>
+            </div>
+          )}
         </div>
         <div className="col-span-1">
           <img
