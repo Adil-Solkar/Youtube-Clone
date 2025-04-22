@@ -5,7 +5,7 @@ import Button from './Button'
 
 const ButtonList = () => {
   return (
-    <div className='flex mt-20'>
+    <div className='flex'>
       <Button name="All" />
       <Button name="All" />
       <Button name="All" />
